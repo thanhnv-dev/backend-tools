@@ -13,10 +13,10 @@ export enum Platform {
 @Schema({ timestamps: true })
 export class App {
   @ApiProperty({
-    description: 'Unique identifier for the app',
+    description: 'Identifier for the app',
     example: 'com.mycompany.myapp',
   })
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true })
   appId: string;
 
   @ApiProperty({

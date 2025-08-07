@@ -1,20 +1,31 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { App, AppDocument } from './app.schema';
 import { CreateAppDto } from './dto/create-app.dto';
 import { UpdateAppDto } from './dto/update-app.dto';
 
+interface MongoError extends Error {
+  code?: number;
+}
+
 @Injectable()
 export class AppsService {
-  constructor(@InjectModel(App.name) private readonly appModel: Model<AppDocument>) {}
+  constructor(
+    @InjectModel(App.name) private readonly appModel: Model<AppDocument>,
+  ) {}
 
   async create(createAppDto: CreateAppDto): Promise<App> {
     try {
       const createdApp = new this.appModel(createAppDto);
       return await createdApp.save();
     } catch (error) {
-      if (error.code === 11000) {
+      const mongoError = error as MongoError;
+      if (mongoError?.code === 11000) {
         throw new ConflictException('App with this appId already exists');
       }
       throw error;
@@ -51,7 +62,8 @@ export class AppsService {
       }
       return updatedApp;
     } catch (error) {
-      if (error.code === 11000) {
+      const mongoError = error as MongoError;
+      if (mongoError?.code === 11000) {
         throw new ConflictException('App with this appId already exists');
       }
       throw error;
